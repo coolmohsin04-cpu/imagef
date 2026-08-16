@@ -482,5 +482,36 @@ async def send_notice(ctx, target: discord.Member):
 async def on_ready():
     print(f"Logged in as {bot.user.name} - Both $confirm and $mm are ready!")
 
+@bot.command(name="confirm")
+async def confirm(ctx, member: discord.Member = None, *, details: str = None):
+    # 1. Put your server IDs in this list
+    GUILD_IDS = [951894453457662062, 553406757112774658, 1438292831100735651]  
+    
+    guild = None
+    author_member = None
+    
+    # 2. Check each server to find where the user belongs
+    for guild_id in GUILD_IDS:
+        g = bot.get_guild(guild_id)
+        if g:
+            m = g.get_member(ctx.author.id)
+            if m:
+                guild = g
+                author_member = m
+                break # Found them! Stop searching.
+                
+    if not guild or not author_member:
+        await ctx.send("You must be in one of the authorized servers to use this command!")
+        return
+
+    # 3. Check roles using that server's member object
+    vouch_role = discord.utils.get(guild.roles, name="vouch")
+    if vouch_role not in author_member.roles:
+        await ctx.send("You don't have permission to use this command.")
+        return
+
+    # --- Rest of your confirm logic ---
+    await ctx.send(f"Confirm command executed successfully from DMs using server: {guild.name}!")
+    
 keep_awake()
 bot.run(os.getenv('DISCORD_TOKEN'))
