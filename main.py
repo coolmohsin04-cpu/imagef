@@ -482,13 +482,13 @@ async def on_ready():
     print(f"Logged in as {bot.user.name} - Both $confirm and $mm are ready!")
     
 @bot.command(name="confirm")
-async def confirm(ctx, partner: discord.Member = None, *, deal_details: str = "Unspecified Trade"):
-    # Multi-server check
-    GUILD_IDS = [951894453457662062, 553406757112774658, 1438292831100735651]
-
+async def confirm(ctx, trader1: discord.User, trader2: discord.User = None, *, deal_details: str = "Unspecified Trade"):
+    # 1. Multi-server check for DM or server execution
+    GUILD_IDS = [951894453457662062, 553406757112774658, 1438292831100735651]  
+    
     guild = None
     author_member = None
-
+    
     for guild_id in GUILD_IDS:
         g = bot.get_guild(guild_id)
         if g:
@@ -508,26 +508,32 @@ async def confirm(ctx, partner: discord.Member = None, *, deal_details: str = "U
         await ctx.send("You don't have permission to use this command.")
         return
 
-    if not partner:
-        await ctx.send("❌ Please mention your trading partner! Correct format: `$confirm @partner [details]`")
-        return
+    # 2. Handle 1 vs 2 traders automatically
+    if trader2 is None:
+        # If you only mentioned one person, assume you are trader1 and they are trader2
+        actual_trader1 = ctx.author
+        actual_trader2 = trader1
+    else:
+        # If you mentioned two people, use them as trader1 and trader2
+        actual_trader1 = trader1
+        actual_trader2 = trader2
 
-    if partner == ctx.author:
-        await ctx.send("You cannot start a trade confirmation with yourself!")
+    if actual_trader1 == actual_trader2:
+        await ctx.send("You cannot trade with the same person!")
         return
 
     embed = discord.Embed(
         title="🤝 Trade Confirmation Required",
         description=(
             f"**Deal Details:** {deal_details}\n"
-            f"**Traders:** {ctx.author.mention} & {partner.mention}\n\n"
+            f"**Traders:** {actual_trader1.mention} & {actual_trader2.mention}\n\n"
             f"Both traders, please click **Confirm** to proceed or **Cancel** to abort.\n\n"
             f"Two confirmations are required."
         ),
         color=discord.Color.from_rgb(255, 105, 180)  # Pink Border
     )
 
-    view = TradeView(trader1=ctx.author, trader2=partner, item_details=deal_details)
+    view = TradeView(trader1=actual_trader1, trader2=actual_trader2, item_details=deal_details)
     await ctx.send(embed=embed, view=view)
     
 keep_awake()
