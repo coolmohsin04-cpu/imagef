@@ -78,7 +78,6 @@ class TradeView(discord.ui.View):
         self.stop()
 
 
-@bot.command(name="confirm")
 async def confirm_trade(ctx, partner: discord.Member, *, deal_details: str = "Unspecified Trade"):
     if partner == ctx.author:
         await ctx.send("You cannot start a trade confirmation with yourself!")
