@@ -484,12 +484,12 @@ async def on_ready():
     
 @bot.command(name="confirm")
 async def confirm(ctx, partner: discord.Member = None, *, deal_details: str = "Unspecified Trade"):
-# Multi-server check
-GUILD_IDS =[951894453457662062, 553406757112774658, 1438292831100735651]
-    
+    # Multi-server check
+    GUILD_IDS = [951894453457662062, 553406757112774658, 1438292831100735651]
+
     guild = None
     author_member = None
-    
+
     for guild_id in GUILD_IDS:
         g = bot.get_guild(guild_id)
         if g:
